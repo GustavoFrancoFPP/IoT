@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-breadboard-mini",
+      "id": "bb1",
+      "top": -164.6,
+      "left": 247.2,
+      "attrs": { "color": "#33771b" }
+    },
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht1", "top": -268.5, "left": 253.8, "attrs": {} },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -110.4,
+      "left": 239.45,
+      "rotate": 90,
+      "attrs": { "value": "1" }
+    }
+  ],
+  "connections": [
+    [ "bb1:5t.e", "uno:GND.2", "black", [ "v0" ] ],
+    [ "bb1:2t.b", "uno:5V", "red", [ "v0" ] ],
+    [ "r1:2", "bb1:3t.e", "yellow", [ "h0" ] ],
+    [ "bb1:3t.d", "uno:3", "magenta", [ "v0" ] ],
+    [ "r1:1", "bb1:2t.c", "", [ "$bb" ] ],
+    [ "r1:2", "bb1:2b.g", "", [ "$bb" ] ],
+    [ "dht1:VCC", "bb1:2t.a", "", [ "$bb" ] ],
+    [ "dht1:SDA", "bb1:3t.a", "", [ "$bb" ] ],
+    [ "dht1:NC", "bb1:4t.a", "", [ "$bb" ] ],
+    [ "dht1:GND", "bb1:5t.a", "", [ "$bb" ] ]
+  ],
+  "dependencies": {}
+}
