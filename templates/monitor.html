@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Porta Web</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: white;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .status-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 2px solid;
+            transition: all 0.3s ease;
+        }
+        
+        .status-fechada {
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .status-aberta {
+            border-color: #ff4444;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-text {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .status-descricao {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .icone {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .controles {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .btn-controle {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            min-width: 120px;
+        }
+        
+        .btn-abrir {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+        
+        .btn-abrir:hover {
+            background: linear-gradient(135deg, #ee5a52, #d63031);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-fechar {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+        }
+        
+        .btn-fechar:hover {
+            background: linear-gradient(135deg, #00a085, #008c75);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+        }
+        
+        .info-conexao {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        
+        .conectado {
+            color: #00ff88;
+        }
+        
+        .desconectado {
+            color: #ff4444;
+        }
+        
+        .atualizacao {
+            margin-top: 20px;
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚪 Controle de Porta Web</h1>
+        <p>Controle a porta remotamente pelo site</p>
+        
+        <div class="status-box" id="statusBox">
+            <div class="icone" id="icone">🔒</div>
+            <div class="status-text" id="statusTexto">FECHADA</div>
+            <div class="status-descricao" id="statusDescricao">Porta está segura</div>
+        </div>
+        
+        <div class="controles">
+            <button class="btn-controle btn-abrir" onclick="controlarPorta('abrir')">
+                🔓 Abrir Porta
+            </button>
+            <button class="btn-controle btn-fechar" onclick="controlarPorta('fechar')">
+                🔒 Fechar Porta
+            </button>
+        </div>
+        
+        <div class="info-conexao">
+            <div id="statusConexao">🔌 Conectando ao Arduino...</div>
+            <div>💡 Use os botões acima para controlar a porta</div>
+        </div>
+        
+        <div class="atualizacao">
+            Última atualização: <span id="ultimaAtualizacao">--:--:--</span>
+        </div>
+    </div>
+
+    <script>
+        function controlarPorta(acao) {
+            fetch(`/controlar/${acao}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ERRO') {
+                        alert('❌ Erro ao controlar a porta!');
+                    } else {
+                        console.log(`✅ Porta ${acao.toUpperCase()} com sucesso`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('❌ Erro de comunicação!');
+                });
+        }
+
+        function atualizarStatus() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusBox = document.getElementById('statusBox');
+                    const statusTexto = document.getElementById('statusTexto');
+                    const statusDescricao = document.getElementById('statusDescricao');
+                    const icone = document.getElementById('icone');
+                    const statusConexao = document.getElementById('statusConexao');
+      
+                    if (data.porta === 'ABERTA') {
+                        statusBox.className = 'status-box status-aberta';
+                        statusTexto.textContent = 'ABERTA';
+                        statusTexto.style.color = '#ff4444';
+                        statusDescricao.textContent = 'Porta está aberta - Atenção!';
+                        icone.textContent = '🔓';
+                        icone.style.color = '#ff4444';
+                    } else {
+                        statusBox.className = 'status-box status-fechada';
+                        statusTexto.textContent = 'FECHADA';
+                        statusTexto.style.color = '#00ff88';
+                        statusDescricao.textContent = 'Porta está segura';
+                        icone.textContent = '🔒';
+                        icone.style.color = '#00ff88';
+                    }
+                    
+                    // Atualiza status da conexão
+                    statusConexao.innerHTML = '✅ <span class="conectado">Conectado ao Arduino</span>';
+                    
+                    document.getElementById('ultimaAtualizacao').textContent = new Date().toLocaleTimeString();
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    const statusConexao = document.getElementById('statusConexao');
+                    statusConexao.innerHTML = '❌ <span class="desconectado">Arduino desconectado</span>';
+                });
+        }
+        
+        setInterval(atualizarStatus, 1000);
+        atualizarStatus();
+    </script>
+</body>
+</html>

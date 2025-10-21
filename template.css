@@ -57,3 +57,10 @@
     .btn-vermelho:hover {
       background-color: #c82333;
     }
+
+        .btn-amarelo {
+      background-color: yellow;
+    }
+    .btn-amarelo:hover {
+      background-color: yellow;
+    }

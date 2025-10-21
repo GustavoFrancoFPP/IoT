@@ -1,5 +1,6 @@
-const int led1Pin = 7; // LED Verde
-const int led2Pin = 8; // LED Vermelho
+const int led1Pin = 7; 
+const int led2Pin = 8; 
+const int led3Pin = 9;
 
 void setup() {
   // Inicia a comunicação serial com a mesma velocidade do Python
@@ -8,6 +9,7 @@ void setup() {
   // Define os pinos dos LEDs como saída
   pinMode(led1Pin, OUTPUT);
   pinMode(led2Pin, OUTPUT);
+  pinMode(led3Pin, OUTPUT); // LED Amarelo
 }
 
 void loop() {
@@ -29,6 +31,12 @@ void loop() {
         break;
       case 'b':
         digitalWrite(led2Pin, LOW); // Desliga o LED 2
+        break;
+      case 'C':
+        digitalWrite(led3Pin, HIGH); // Liga o LED 3
+        break;
+      case 'c':
+        digitalWrite(led3Pin, LOW); // Desliga o LED 3
         break;
     }
   }
