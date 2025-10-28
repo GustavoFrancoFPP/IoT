@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Climatização IoT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .dados-sensor {
+            font-size: 2rem;
+            margin: 20px 0;
+        }
+
+        .status {
+            font-size: 1.5rem;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .status-ok { background: #28a745; }
+        .status-atencao { background: #ffc107; color: black; }
+        .status-alerta { background: #dc3545; animation: piscar 1s infinite; }
+
+        @keyframes piscar {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .leds-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .led {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #333;
+            border: 3px solid #555;
+            transition: all 0.3s;
+        }
+
+        .led.ativo {
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .led-verde { background: #00ff00; }
+        .led-amarelo { background: #ffff00; }
+        .led-vermelho { background: #ff0000; }
+        .led-ventilador { background: #0088ff; }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .lcd {
+            background: #2d5016;
+            color: #8cff00;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            border: 3px solid #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌡️ Sistema de Climatização IoT</h1>
+        
+        <div class="card">
+            <h2>📊 Dados do Sensor</h2>
+            <div class="dados-sensor">
+                <span id="temperatura">--</span>°C | 
+                <span id="umidade">--</span>%
+            </div>
+            <div class="status" id="statusDisplay">Aguardando dados...</div>
+            
+            <div class="lcd">
+                <div id="lcdLine1">Temp: --C  Umid: --%</div>
+                <div id="lcdLine2">Condicao: ---</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>💡 Indicadores</h2>
+            <div class="leds-container">
+                <div>
+                    <div class="led led-verde" id="ledVerde"></div>
+                    <div>Ideal</div>
+                </div>
+                <div>
+                    <div class="led led-amarelo" id="ledAmarelo"></div>
+                    <div>Atenção</div>
+                </div>
+                <div>
+                    <div class="led led-vermelho" id="ledVermelho"></div>
+                    <div>Crítico</div>
+                </div>
+                <div>
+                    <div class="led led-ventilador" id="ledVentilador"></div>
+                    <div>Ventilador</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎛️ Controles</h2>
+            <button onclick="controlar('ventilador_ligar')">🌀 Ligar Ventilador</button>
+            <button onclick="controlar('ventilador_desligar')">💨 Desligar Ventilador</button>
+            <button onclick="controlar('buzzer_test')">🔊 Testar Buzzer</button>
+            <button onclick="controlar('leds_test')">💡 Testar LEDs</button>
+        </div>
+    </div>
+
+    <script>
+        function atualizarDados() {
+            fetch('/get_data')
+                .then(response => response.json())
+                .then(data => {
+                    // Atualiza displays
+                    document.getElementById('temperatura').textContent = data.temperatura;
+                    document.getElementById('umidade').textContent = data.umidade;
+                    
+                    // Atualiza status
+                    const statusDisplay = document.getElementById('statusDisplay');
+                    statusDisplay.textContent = `Status: ${data.status}`;
+                    statusDisplay.className = 'status ';
+                    
+                    if (data.status === 'OK') statusDisplay.classList.add('status-ok');
+                    else if (data.status === 'ATENÇÃO') statusDisplay.classList.add('status-atencao');
+                    else if (data.status === 'ALERTA!') statusDisplay.classList.add('status-alerta');
+                    
+                    // Atualiza LEDs
+                    document.getElementById('ledVerde').className = 
+                        `led led-verde ${data.status === 'OK' ? 'ativo' : ''}`;
+                    document.getElementById('ledAmarelo').className = 
+                        `led led-amarelo ${data.status === 'ATENÇÃO' ? 'ativo' : ''}`;
+                    document.getElementById('ledVermelho').className = 
+                        `led led-vermelho ${data.status === 'ALERTA!' ? 'ativo' : ''}`;
+                    document.getElementById('ledVentilador').className = 
+                        `led led-ventilador ${data.ventilador ? 'ativo' : ''}`;
+                    
+                    // Atualiza LCD virtual
+                    document.getElementById('lcdLine1').textContent = 
+                        `Temp: ${data.temperatura}C  Umid: ${data.umidade}%`;
+                    document.getElementById('lcdLine2').textContent = 
+                        `Condicao: ${data.status}`;
+                })
+                .catch(error => console.error('Erro:', error));
+        }
+
+        function controlar(acao) {
+            fetch(`/controlar/${acao}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(`Comando ${acao}: ${data.status}`);
+                });
+        }
+
+        // Atualiza a cada 2 segundos
+        setInterval(atualizarDados, 2000);
+        atualizarDados(); // Primeira chamada
+    </script>
+</body>
+</html>
